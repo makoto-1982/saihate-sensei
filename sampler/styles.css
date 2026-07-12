@@ -1,0 +1,45 @@
+/* 背景画像と基本の背景色の設定 */
+body {
+    background-color: #000; /* 基本の背景色を黒に設定 */
+    background-image: url('background.png'); /* 背景画像ファイル名を「background.png」に指定 */
+    background-size: contain; /* 縦横比を保って全体が収まるように縮小 */
+    background-position: bottom center; /* 画面の底辺と中央を基準に配置 */
+    background-repeat: no-repeat; /* 繰り返さない */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: #fff;
+}
+
+.sampler {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3列のグリッドレイアウト */
+    gap: 8px; /* ボタン間の余白を少し小さく */
+    max-width: 340px; /* 全体の幅を少し調整 */
+    margin: auto;
+}
+
+.pad {
+    width: 110px; /* パッドサイズを少し小さく */
+    height: 110px;
+    padding: 8px; /* タップ範囲を広げる */
+    box-sizing: border-box;
+    background-color: rgba(51, 51, 51, 0.9); /* わずかに透けるように設定 */
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+    touch-action: manipulation; /* タップ時の拡大を防止 */
+}
+
+/* パッドのアクティブエフェクト */
+.pad.active {
+    background-color: rgba(255, 87, 34, 0.9); /* クリック時のエフェクトも調整 */
+    box-shadow: 0px 0px 15px rgba(255, 87, 34, 0.8);
+    transform: scale(0.95);
+}
