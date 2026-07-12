@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <title>Chi Sampler</title>
+
+  <style>
+    :root{
+      --bg:#000;
+      --glow:rgba(255,230,120,0.92);
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+      -webkit-touch-callout:none;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+
+    html, body{
+      margin:0;
+      width:100%;
+      height:100%;
+      background:var(--bg);
+      overflow:hidden;
+    }
+
+    body{
+      font-family:-apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+      overscroll-behavior:none;
+    }
+
+    .app{
+      width:100%;
+      min-height:100dvh;
+      max-width:520px;
+      margin:0 auto;
+
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+      align-items:center;
+      gap:24px;
+
+      padding:
+        max(24px, env(safe-area-inset-top))
+        20px
+        calc(72px + env(safe-area-inset-bottom));
+    }
+
+    .logo{
+      width:100%;
+      max-width:500px;
+      aspect-ratio:500 / 182;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom:8px;
+      flex:0 0 auto;
+    }
+
+    .logo img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      pointer-events:none;
+      -webkit-user-drag:none;
+    }
+
+    .pad{
+      appearance:none;
+      -webkit-appearance:none;
+      border:none;
+      background:none;
+      padding:0;
+      margin:0;
+
+      width:min(86vw, 420px);
+      aspect-ratio:1 / 1;
+
+      position:relative;
+      display:block;
+      flex:0 0 auto;
+      touch-action:manipulation;
+    }
+
+    .pad img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      pointer-events:none;
+      -webkit-user-drag:none;
+    }
+
+    .pad::after{
+      content:"";
+      position:absolute;
+      inset:-10px;
+      border-radius:28px;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .05s ease;
+    }
+
+    .pad.active::after{
+      opacity:1;
+      box-shadow:
+        0 0 24px var(--glow),
+        0 0 56px var(--glow);
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="logo">
+      <img src="logo.png" alt="">
+    </div>
+
+    <button id="pad" class="pad" type="button" aria-label="チーを再生">
+      <img src="chi-button.png" alt="">
+    </button>
+  </main>
+
+  <script>
+    const AUDIO_FILE = "chee.wav";
+
+    let audioContext = null;
+    let audioBuffer = null;
+    let loadPromise = null;
+    let unlocked = false;
+    let touchHandled = false;
+
+    function getAudioContext() {
+      if (!audioContext) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        audioContext = new AC({
+          latencyHint: "interactive"
+        });
+      }
+      return audioContext;
+    }
+
+    async function loadBuffer() {
+      if (audioBuffer) return audioBuffer;
+      if (loadPromise) return loadPromise;
+
+      loadPromise = (async () => {
+        const ctx = getAudioContext();
+        const res = await fetch(AUDIO_FILE, { cache: "force-cache" });
+        if (!res.ok) throw new Error("audio file load failed");
+
+        const arrayBuffer = await res.arrayBuffer();
+        audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+        return audioBuffer;
+      })();
+
+      return loadPromise;
+    }
+
+    async function unlockAudio() {
+      const ctx = getAudioContext();
+
+      if (ctx.state !== "running") {
+        await ctx.resume();
+      }
+
+      if (!unlocked) {
+        const silent = ctx.createBuffer(1, 1, 22050);
+        const source = ctx.createBufferSource();
+        source.buffer = silent;
+        source.connect(ctx.destination);
+        source.start(0);
+        unlocked = true;
+      }
+    }
+
+    function playSound() {
+      if (!audioContext || !audioBuffer) return;
+
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+
+      const gain = audioContext.createGain();
+      gain.gain.value = 1.0;
+
+      source.connect(gain);
+      gain.connect(audioContext.destination);
+
+      source.start(0);
+    }
+
+    const pad = document.getElementById("pad");
+
+    function setActive(flag) {
+      pad.classList.toggle("active", flag);
+    }
+
+    async function handlePress(e) {
+      e.preventDefault();
+
+      try {
+        setActive(true);
+        await unlockAudio();
+
+        if (!audioBuffer) {
+          await loadBuffer();
+        }
+
+        playSound();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function handleRelease() {
+      setActive(false);
+      touchHandled = false;
+    }
+
+    pad.addEventListener("touchstart", async (e) => {
+      touchHandled = true;
+      await handlePress(e);
+    }, { passive: false });
+
+    pad.addEventListener("touchend", handleRelease, { passive: true });
+    pad.addEventListener("touchcancel", handleRelease, { passive: true });
+
+    pad.addEventListener("mousedown", async (e) => {
+      if (touchHandled) return;
+      await handlePress(e);
+    });
+
+    pad.addEventListener("mouseup", handleRelease);
+    pad.addEventListener("mouseleave", handleRelease);
+    pad.addEventListener("contextmenu", (e) => e.preventDefault());
+    pad.addEventListener("dragstart", (e) => e.preventDefault());
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        setActive(false);
+        touchHandled = false;
+      }
+    });
+
+    loadBuffer().catch((err) => {
+      console.error(err);
+    });
+  </script>
+</body>
+</html>
