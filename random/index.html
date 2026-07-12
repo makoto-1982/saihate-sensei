@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>最果てランダム再生</title>
+
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: white;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 24px 16px 40px;
+      padding-bottom: max(40px, env(safe-area-inset-bottom));
+      box-sizing: border-box;
+      overflow-x: hidden;
+      background: #000;
+    }
+
+    #bg {
+      position: fixed;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: blur(12px) brightness(0.7);
+      transform: scale(1.1);
+      opacity: 0.6;
+      z-index: -2;
+      transition: background-image 0.8s ease;
+    }
+
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(40,40,40,0.35), rgba(0,0,0,0.9));
+      z-index: -1;
+    }
+
+    #logo {
+      width: 240px;
+      max-width: 65vw;
+      opacity: 0.95;
+      filter: drop-shadow(0 6px 20px rgba(0,0,0,0.6));
+    }
+
+    #player {
+      width: 90vw;
+      max-width: 960px;
+      aspect-ratio: 16 / 9;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 24px 90px rgba(0,0,0,0.7);
+      background: black;
+      flex-shrink: 0;
+    }
+
+    #nowTitle {
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+      max-width: 900px;
+      line-height: 1.5;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+      min-height: 2.8em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      /* ← ここが今回の調整 */
+      margin-bottom: -4px;
+    }
+
+    button {
+      font-size: 24px;
+      width: 64px;
+      height: 64px;
+      padding: 0;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      background: white;
+      color: #111;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      flex-shrink: 0;
+      margin-bottom: 12px;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    @media (max-height: 720px) {
+      body {
+        justify-content: flex-start;
+      }
+
+      #logo {
+        width: 200px;
+      }
+
+      button {
+        margin-bottom: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="bg"></div>
+  <div id="overlay"></div>
+
+  <img src="logo.png" id="logo" alt="logo">
+
+  <div id="player"></div>
+
+  <div id="nowTitle">ランダム再生</div>
+
+  <button id="playBtn">▶</button>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+
+  <script>
+    const PLAYLIST_ID = "PLcopHZdckrjT63rBpTPrzCa59g-0cWOmf";
+    const FALLBACK_PLAYLIST_LENGTH = 170;
+
+    let player;
+    let isPlaying = false;
+
+    const playBtn = document.getElementById("playBtn");
+    const nowTitle = document.getElementById("nowTitle");
+    const bg = document.getElementById("bg");
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player("player", {
+        width: "100%",
+        height: "100%",
+        playerVars: {
+          listType: "playlist",
+          list: PLAYLIST_ID,
+          autoplay: 0,
+          controls: 1,
+          rel: 0,
+          modestbranding: 1
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerReady() {
+      nowTitle.textContent = "ランダム再生";
+    }
+
+    playBtn.addEventListener("click", () => {
+      if (!player) return;
+
+      if (!isPlaying) {
+        startRandom();
+      } else {
+        stop();
+      }
+    });
+
+    function getPlaylistLength() {
+      try {
+        const playlist = player.getPlaylist();
+        if (Array.isArray(playlist) && playlist.length > 0) {
+          return playlist.length;
+        }
+      } catch (e) {}
+
+      return FALLBACK_PLAYLIST_LENGTH;
+    }
+
+    function startRandom() {
+      const playlistLength = getPlaylistLength();
+      const randomIndex = Math.floor(Math.random() * playlistLength);
+
+      player.loadPlaylist({
+        listType: "playlist",
+        list: PLAYLIST_ID,
+        index: randomIndex
+      });
+
+      isPlaying = true;
+      playBtn.textContent = "■";
+      nowTitle.textContent = "選択中";
+    }
+
+    function stop() {
+      player.stopVideo();
+
+      isPlaying = false;
+      playBtn.textContent = "▶";
+      nowTitle.textContent = "ランダム再生";
+      bg.style.opacity = "0.2";
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data === YT.PlayerState.PLAYING) {
+        isPlaying = true;
+        playBtn.textContent = "■";
+        updateNowPlaying();
+      }
+    }
+
+    function updateNowPlaying() {
+      try {
+        const data = player.getVideoData();
+        nowTitle.textContent = data.title || "再生中";
+
+        if (data.video_id) {
+          const url = `https://img.youtube.com/vi/${data.video_id}/maxresdefault.jpg`;
+          bg.style.backgroundImage = `url("${url}")`;
+          bg.style.opacity = "0.6";
+        }
+      } catch (e) {
+        nowTitle.textContent = "再生中";
+      }
+    }
+  </script>
+
+</body>
+</html>
