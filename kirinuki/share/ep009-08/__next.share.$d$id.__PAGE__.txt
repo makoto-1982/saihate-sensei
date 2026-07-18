@@ -1,0 +1,7 @@
+1:"$Sreact.fragment"
+2:I[82167,["/kirinuki/_next/static/chunks/0fsi8lw5utejl.js","/kirinuki/_next/static/chunks/0d3tkj33oycf2.js","/kirinuki/_next/static/chunks/07yv1kpx1yiz4.js"],"default"]
+4:I[97367,["/kirinuki/_next/static/chunks/0fsi8lw5utejl.js","/kirinuki/_next/static/chunks/0d3tkj33oycf2.js"],"OutletBoundary"]
+5:"$Sreact.suspense"
+3:["$","a",null,{"href":"../../?clip=ep009-08","children":["「","お昼の番組で最果てが紹介される","」を聴く"]}]
+0:{"rsc":["$","$1","c",{"children":[["$","main",null,{"style":{"padding":"2rem","fontFamily":"sans-serif"},"children":[["$","$L2",null,{"clipId":"ep009-08"}],["$","noscript",null,{"children":"$3"}]]}],[["$","script","script-0",{"src":"/kirinuki/_next/static/chunks/07yv1kpx1yiz4.js","async":true}]],["$","$L4",null,{"children":["$","$5",null,{"name":"Next.MetadataOutlet","children":"$@6"}]}]]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"swIOLujI5gnTyxp4QJFgp"}
+6:null
