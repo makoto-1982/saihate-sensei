@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,79108,t=>{t.q("/kirinuki/_next/static/media/saihate-logo.002s0vtdrp84..png")}]);
