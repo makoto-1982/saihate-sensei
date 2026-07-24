@@ -90,9 +90,9 @@ function strokeFillText(text, x, y, size) {
 }
 
 function drawTextLayer() {
-  strokeFillText(`${state.name || "〇〇"}は`, 750, 202, 41);
-  strokeFillText("カラタチの最果てのセンセイ！", 750, 265, 58);
-  strokeFillText("を聴いています", 750, 320, 41);
+  strokeFillText(`${state.name || "〇〇"}は`, 750, 222, 41);
+  strokeFillText("カラタチの最果てのセンセイ！", 750, 285, 58);
+  strokeFillText("を聴いています", 750, 340, 41);
 
   ctx.save();
   ctx.fillStyle = "#171616";
