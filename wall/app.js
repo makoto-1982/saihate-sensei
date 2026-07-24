@@ -349,6 +349,33 @@ function openWallDatabase() {
   });
 }
 
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function savePostWithFallback(post, blob) {
+  try {
+    const db = await openWallDatabase();
+    await new Promise((resolve, reject) => {
+      const request = db.transaction("posts", "readwrite").objectStore("posts").put({ ...post, image: blob });
+      request.onsuccess = resolve;
+      request.onerror = () => reject(request.error);
+    });
+    return "indexedDB";
+  } catch (databaseError) {
+    const imageDataUrl = await blobToDataUrl(blob);
+    const posts = JSON.parse(localStorage.getItem("saihate-wall-posts") || "[]");
+    posts.push({ ...post, imageDataUrl });
+    localStorage.setItem("saihate-wall-posts", JSON.stringify(posts.slice(-4)));
+    return "localStorage";
+  }
+}
+
 $("#publishWall").addEventListener("click", async () => {
   const wallWindow = window.open("", "_blank");
   if (wallWindow) {
@@ -356,21 +383,16 @@ $("#publishWall").addEventListener("click", async () => {
   }
   try {
     const blob = await exportBlob("image/jpeg", .9);
-    const db = await openWallDatabase();
+    if (!blob) throw new Error("画像を生成できませんでした");
     const deleteToken = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
     const post = {
       id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}`,
       deleteToken,
       createdAt: Date.now(),
       name: state.name,
-      message: state.message,
-      image: blob
+      message: state.message
     };
-    await new Promise((resolve, reject) => {
-      const request = db.transaction("posts", "readwrite").objectStore("posts").put(post);
-      request.onsuccess = resolve;
-      request.onerror = () => reject(request.error);
-    });
+    await savePostWithFallback(post, blob);
     const wallUrl = new URL("./gallery/", location.href);
     wallUrl.searchParams.set("added", "1");
     wallUrl.searchParams.set("manage", deleteToken);
