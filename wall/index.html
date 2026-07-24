@@ -21,21 +21,18 @@
   </header>
 
   <main class="builder">
-    <section class="form-panel" aria-labelledby="input-title">
-      <h1 id="input-title">あなたの言葉を壁に刻む</h1>
-
+    <section class="form-panel" aria-label="布教ヘッダーの入力項目">
       <label class="inline-field">
         <span>ユーザー名</span>
-        <input id="userName" type="text" maxlength="10" value="マコト" autocomplete="off">
-        <small><b id="nameCount">3</b>/10</small>
+        <input id="userName" type="text" maxlength="10" value="" placeholder="〇〇" autocomplete="off">
+        <small><b id="nameCount">0</b>/10</small>
       </label>
 
       <label class="inline-field">
         <span>メッセージ</span>
-        <input id="message" type="text" maxlength="16" value="木曜夜は最果てに集合" autocomplete="off">
-        <small><b id="messageCount">10</b>/16</small>
+        <input id="message" type="text" maxlength="16" value="" placeholder="16文字以内" autocomplete="off">
+        <small><b id="messageCount">0</b>/16</small>
       </label>
-      <p id="inputNotice" class="notice" aria-live="polite">絵文字は使用できません</p>
 
       <div class="stamp-grid" role="list" aria-label="人物画像">
         <button class="stamp-choice is-active" data-stamp="maeda-a" type="button">
@@ -80,6 +77,9 @@
       </div>
       <div class="stamp-actions">
         <span>画像をドラッグで移動できます</span>
+        <button id="bringForward" class="text-button stamp-control" type="button">前へ</button>
+        <button id="sendBackward" class="text-button stamp-control" type="button">後ろへ</button>
+        <button id="selectStamp" class="text-button stamp-control" type="button">選択</button>
         <button id="resetStamp" class="text-button" type="button">位置を戻す</button>
         <button id="deleteStamp" class="text-button danger" type="button">削除</button>
       </div>

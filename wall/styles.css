@@ -47,7 +47,7 @@ button{cursor:pointer}
   box-shadow:0 14px 40px rgba(21,22,20,.12);
 }
 .form-panel{padding:22px}
-.form-panel h1,.preview-panel h2{
+.preview-panel h2{
   margin:0 0 20px;
   font-size:20px;
   font-weight:900;
@@ -72,8 +72,7 @@ button{cursor:pointer}
 }
 .inline-field input:focus{border-color:#111;box-shadow:0 0 0 3px rgba(240,201,0,.32)}
 .inline-field small{text-align:right;color:var(--muted);font-size:11px}
-.notice{min-height:18px;margin:8px 0 16px;text-align:right;color:#8c3029;font-size:11px}
-.stamp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.stamp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:18px}
 .stamp-choice{
   position:relative;
   min-width:0;
@@ -141,6 +140,7 @@ button{cursor:pointer}
 .stamp-actions{justify-content:flex-end;flex-wrap:wrap}
 .stamp-actions>span{margin-right:auto;color:var(--muted)}
 .text-button{padding:7px 9px;background:#e2e0d9;color:#222}
+.text-button:disabled{cursor:default;opacity:.38}
 .text-button.danger{color:#a3241d}
 .finish-actions{
   display:grid;
@@ -164,12 +164,10 @@ button{cursor:pointer}
   .builder{display:flex;flex-direction:column;padding:12px;gap:12px}
   .form-panel,.preview-panel{width:100%;border-radius:13px}
   .form-panel{padding:14px}
-  .form-panel h1{margin-bottom:12px;font-size:17px}
   .inline-field{grid-template-columns:78px minmax(0,1fr) 37px;gap:6px;margin-top:8px}
   .inline-field>span{font-size:12px}
   .inline-field input{height:38px;font-size:13px}
-  .notice{margin:4px 0 8px}
-  .stamp-grid{grid-template-columns:repeat(4,1fr);gap:6px}
+  .stamp-grid{grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
   .stamp-choice{padding:4px;border-radius:8px}
   .stamp-choice span{font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .stamp-add-row{margin-top:8px}

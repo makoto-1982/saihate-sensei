@@ -13,8 +13,8 @@ background.src = "./assets/backgrounds/bricks.png";
 
 const loadedImages = {};
 const state = {
-  name: "マコト",
-  message: "木曜夜は最果てに集合",
+  name: "",
+  message: "",
   choice: "maeda-a",
   stamps: [],
   selectedId: null,
@@ -28,7 +28,6 @@ const nameInput = $("#userName");
 const messageInput = $("#message");
 const nameCount = $("#nameCount");
 const messageCount = $("#messageCount");
-const notice = $("#inputNotice");
 const scaleInput = $("#stampScale");
 const rotationInput = $("#stampRotation");
 const statusMessage = $("#statusMessage");
@@ -91,14 +90,9 @@ function strokeFillText(text, x, y, size) {
 }
 
 function drawTextLayer() {
-  ctx.save();
-  ctx.translate(750, 0);
-  ctx.scale(.82, 1);
-  ctx.translate(-750, 0);
   strokeFillText(`${state.name || "〇〇"}は`, 750, 166, 41);
   strokeFillText("カラタチの最果てのセンセイ！", 750, 234, 58);
-  strokeFillText("を愛聴しています", 750, 298, 41);
-  ctx.restore();
+  strokeFillText("を聴いています", 750, 298, 41);
 
   ctx.save();
   ctx.fillStyle = "#171616";
@@ -114,7 +108,7 @@ function drawTextLayer() {
   let messageSize = 53;
   ctx.font = `${messageSize}px "New Tegomin", "Noto Sans JP", serif`;
   const maxMessageWidth = 620;
-  const measuredWidth = ctx.measureText(state.message || "あなたの言葉").width;
+  const measuredWidth = ctx.measureText(state.message).width;
   if (measuredWidth > maxMessageWidth) {
     messageSize = Math.max(36, messageSize * (maxMessageWidth / measuredWidth));
     ctx.font = `${messageSize}px "New Tegomin", "Noto Sans JP", serif`;
@@ -122,7 +116,7 @@ function drawTextLayer() {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = "#fff";
-  ctx.fillText(state.message || "あなたの言葉", 765, 392);
+  if (state.message) ctx.fillText(state.message, 765, 392);
   ctx.restore();
 }
 
@@ -135,6 +129,18 @@ function draw() {
 
 function selectedStamp() {
   return state.stamps.find((stamp) => stamp.id === state.selectedId);
+}
+
+function syncStampControls() {
+  const stamp = selectedStamp();
+  scaleInput.disabled = !stamp;
+  rotationInput.disabled = !stamp;
+  document.querySelectorAll(".stamp-control, #resetStamp, #deleteStamp").forEach((button) => {
+    button.disabled = !stamp;
+  });
+  if (!stamp) return;
+  scaleInput.value = Math.round(stamp.scale * 100);
+  rotationInput.value = stamp.rotation;
 }
 
 async function addStamp() {
@@ -157,6 +163,7 @@ async function addStamp() {
   state.selectedId = stamp.id;
   scaleInput.value = 100;
   rotationInput.value = 0;
+  syncStampControls();
   draw();
 }
 
@@ -190,6 +197,7 @@ canvas.addEventListener("pointerdown", (event) => {
   const stamp = hitTest(point);
   if (!stamp) {
     state.selectedId = null;
+    syncStampControls();
     draw();
     return;
   }
@@ -199,6 +207,7 @@ canvas.addEventListener("pointerdown", (event) => {
   state.dragOffsetY = point.y - stamp.y;
   scaleInput.value = Math.round(stamp.scale * 100);
   rotationInput.value = stamp.rotation;
+  syncStampControls();
   canvas.setPointerCapture(event.pointerId);
   draw();
 });
@@ -219,7 +228,6 @@ canvas.addEventListener("pointercancel", stopDragging);
 
 nameInput.addEventListener("input", () => {
   const cleaned = cleanText(nameInput.value, 10);
-  if (cleaned !== nameInput.value) notice.textContent = "絵文字を取り除きました";
   nameInput.value = cleaned;
   state.name = cleaned;
   nameCount.textContent = [...cleaned].length;
@@ -228,7 +236,6 @@ nameInput.addEventListener("input", () => {
 
 messageInput.addEventListener("input", () => {
   const cleaned = cleanText(messageInput.value, 16);
-  if (cleaned !== messageInput.value) notice.textContent = "絵文字を取り除きました";
   messageInput.value = cleaned;
   state.message = cleaned;
   messageCount.textContent = [...cleaned].length;
@@ -245,6 +252,26 @@ document.querySelectorAll(".stamp-choice").forEach((button) => {
 });
 
 $("#addStamp").addEventListener("click", addStamp);
+$("#bringForward").addEventListener("click", () => {
+  const index = state.stamps.findIndex((stamp) => stamp.id === state.selectedId);
+  if (index < 0 || index === state.stamps.length - 1) return;
+  [state.stamps[index], state.stamps[index + 1]] = [state.stamps[index + 1], state.stamps[index]];
+  draw();
+});
+$("#sendBackward").addEventListener("click", () => {
+  const index = state.stamps.findIndex((stamp) => stamp.id === state.selectedId);
+  if (index <= 0) return;
+  [state.stamps[index], state.stamps[index - 1]] = [state.stamps[index - 1], state.stamps[index]];
+  draw();
+});
+$("#selectStamp").addEventListener("click", () => {
+  if (!state.stamps.length) return;
+  const index = state.stamps.findIndex((stamp) => stamp.id === state.selectedId);
+  const nextIndex = index <= 0 ? state.stamps.length - 1 : index - 1;
+  state.selectedId = state.stamps[nextIndex].id;
+  syncStampControls();
+  draw();
+});
 scaleInput.addEventListener("input", () => {
   const stamp = selectedStamp();
   if (!stamp) return;
@@ -272,6 +299,7 @@ $("#deleteStamp").addEventListener("click", () => {
   if (!state.selectedId) return;
   state.stamps = state.stamps.filter((stamp) => stamp.id !== state.selectedId);
   state.selectedId = null;
+  syncStampControls();
   draw();
 });
 
@@ -346,10 +374,7 @@ Promise.all([
     else background.onload = resolve;
   }),
   ...Object.values(stampCatalog).map((item) => loadImage(item.src))
-]).then(async () => {
-  await addStamp();
-  state.choice = "oyama-a";
-  await addStamp();
-  state.choice = "maeda-a";
+]).then(() => {
+  syncStampControls();
   draw();
 });
