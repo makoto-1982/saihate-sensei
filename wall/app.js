@@ -96,18 +96,18 @@ function drawTextLayer() {
 
   ctx.save();
   ctx.fillStyle = "#171616";
-  roundedRectPath(ctx, 420, 350, 690, 80, 16);
+  roundedRectPath(ctx, 350, 350, 800, 80, 16);
   ctx.fill();
   ctx.beginPath();
-  ctx.moveTo(450, 433);
-  ctx.quadraticCurveTo(770, 423, 1090, 429);
+  ctx.moveTo(380, 433);
+  ctx.quadraticCurveTo(750, 423, 1120, 429);
   ctx.strokeStyle = "#171616";
   ctx.lineWidth = 8;
   ctx.lineCap = "round";
   ctx.stroke();
   let messageSize = 53;
   ctx.font = `${messageSize}px "New Tegomin", "Noto Sans JP", serif`;
-  const maxMessageWidth = 620;
+  const maxMessageWidth = 720;
   const measuredWidth = ctx.measureText(state.message).width;
   if (measuredWidth > maxMessageWidth) {
     messageSize = Math.max(36, messageSize * (maxMessageWidth / measuredWidth));
@@ -303,7 +303,7 @@ $("#deleteStamp").addEventListener("click", () => {
   draw();
 });
 
-function exportBlob(type = "image/png", quality = .94) {
+function exportBlob(type = "image/jpeg", quality = .9) {
   const selected = state.selectedId;
   state.selectedId = null;
   draw();
@@ -317,8 +317,8 @@ function exportBlob(type = "image/png", quality = .94) {
 }
 
 $("#saveImage").addEventListener("click", async () => {
-  const blob = await exportBlob("image/png");
-  const file = new File([blob], "saihate-fukyo-header.png", { type: "image/png" });
+  const blob = await exportBlob("image/jpeg", .9);
+  const file = new File([blob], "saihate-fukyo-header.jpg", { type: "image/jpeg" });
   if (navigator.canShare?.({ files: [file] }) && matchMedia("(max-width: 780px)").matches) {
     try {
       await navigator.share({ files: [file], title: "最果て布教ヘッダー" });
@@ -331,10 +331,10 @@ $("#saveImage").addEventListener("click", async () => {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = "saihate-fukyo-header.png";
+  anchor.download = "saihate-fukyo-header.jpg";
   anchor.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-  statusMessage.textContent = "1500×500pxの画像を保存しました";
+  statusMessage.textContent = "1500×500pxの軽量なJPEG画像を保存しました";
 });
 
 function openWallDatabase() {
