@@ -90,17 +90,17 @@ function strokeFillText(text, x, y, size) {
 }
 
 function drawTextLayer() {
-  strokeFillText(`${state.name || "〇〇"}は`, 750, 166, 41);
-  strokeFillText("カラタチの最果てのセンセイ！", 750, 234, 58);
-  strokeFillText("を聴いています", 750, 298, 41);
+  strokeFillText(`${state.name || "〇〇"}は`, 750, 202, 41);
+  strokeFillText("カラタチの最果てのセンセイ！", 750, 265, 58);
+  strokeFillText("を聴いています", 750, 320, 41);
 
   ctx.save();
   ctx.fillStyle = "#171616";
-  roundedRectPath(ctx, 350, 350, 800, 80, 16);
+  roundedRectPath(ctx, 350, 375, 800, 85, 16);
   ctx.fill();
   ctx.beginPath();
-  ctx.moveTo(380, 433);
-  ctx.quadraticCurveTo(750, 423, 1120, 429);
+  ctx.moveTo(380, 466);
+  ctx.quadraticCurveTo(750, 456, 1120, 462);
   ctx.strokeStyle = "#171616";
   ctx.lineWidth = 8;
   ctx.lineCap = "round";
@@ -116,7 +116,7 @@ function drawTextLayer() {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = "#fff";
-  if (state.message) ctx.fillText(state.message, 765, 392);
+  if (state.message) ctx.fillText(state.message, 765, 418);
   ctx.restore();
 }
 
@@ -322,7 +322,7 @@ $("#saveImage").addEventListener("click", async () => {
   if (navigator.canShare?.({ files: [file] }) && matchMedia("(max-width: 780px)").matches) {
     try {
       await navigator.share({ files: [file], title: "最果て布教ヘッダー" });
-      statusMessage.textContent = "画像を共有しました";
+      statusMessage.textContent = "画像を保存しました";
       return;
     } catch (error) {
       if (error.name === "AbortError") return;
@@ -360,6 +360,12 @@ function blobToDataUrl(blob) {
 
 async function savePostWithFallback(post, blob) {
   try {
+    const imageDataUrl = await blobToDataUrl(blob);
+    const posts = JSON.parse(localStorage.getItem("saihate-wall-posts") || "[]");
+    posts.push({ ...post, imageDataUrl });
+    localStorage.setItem("saihate-wall-posts", JSON.stringify(posts.slice(-4)));
+    return "localStorage";
+  } catch (localStorageError) {
     const db = await openWallDatabase();
     await new Promise((resolve, reject) => {
       const request = db.transaction("posts", "readwrite").objectStore("posts").put({ ...post, image: blob });
@@ -367,12 +373,6 @@ async function savePostWithFallback(post, blob) {
       request.onerror = () => reject(request.error);
     });
     return "indexedDB";
-  } catch (databaseError) {
-    const imageDataUrl = await blobToDataUrl(blob);
-    const posts = JSON.parse(localStorage.getItem("saihate-wall-posts") || "[]");
-    posts.push({ ...post, imageDataUrl });
-    localStorage.setItem("saihate-wall-posts", JSON.stringify(posts.slice(-4)));
-    return "localStorage";
   }
 }
 

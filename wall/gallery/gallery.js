@@ -54,11 +54,22 @@ async function loadPosts() {
 }
 
 document.querySelector("#copyDeleteUrl").addEventListener("click", async () => {
+  const button = document.querySelector("#copyDeleteUrl");
   try {
     await navigator.clipboard.writeText(location.href);
-    document.querySelector("#copyDeleteUrl").textContent = "コピーしました";
+    button.textContent = "コピーしました";
   } catch {
-    prompt("このURLをコピーしてください", location.href);
+    const textArea = document.createElement("textarea");
+    textArea.value = location.href;
+    textArea.setAttribute("readonly", "");
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    document.body.append(textArea);
+    textArea.select();
+    const copied = document.execCommand("copy");
+    textArea.remove();
+    if (copied) button.textContent = "コピーしました";
+    else prompt("このURLをコピーしてください", location.href);
   }
 });
 
