@@ -1,0 +1,46 @@
+*{box-sizing:border-box}
+html{
+  min-height:100%;
+  background:#48545a url("../assets/backgrounds/sky-loop.jpg") center top/cover repeat-y;
+}
+body{
+  margin:0;
+  min-height:100vh;
+  color:#fff;
+  background:rgba(29,36,40,.12);
+  font-family:"Noto Sans JP",-apple-system,BlinkMacSystemFont,"Yu Gothic",sans-serif;
+}
+.wall-nav{
+  position:sticky;
+  top:0;
+  z-index:10;
+  min-height:54px;
+  padding:0 max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left));
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:#111;
+  box-shadow:0 2px 0 rgba(255,255,255,.08);
+}
+.wall-nav a{color:#fff;text-decoration:none;font-weight:900}
+.wall-name{font-size:17px}
+.wall-nav nav{display:flex;gap:28px;font-size:13px}
+.wall{
+  width:min(calc(100% - 40px),1000px);
+  margin:8px auto 0;
+  box-shadow:0 0 38px rgba(0,0,0,.24);
+}
+.wall img{
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio:3/1;
+  object-fit:cover;
+  margin:0;
+}
+#userPosts,#samplePosts{display:block}
+.empty{padding:24px;background:#eee;color:#222;text-align:center}
+@media(max-width:600px){
+  .wall{width:calc(100% - 40px)}
+  .wall-nav nav{gap:26px}
+}
