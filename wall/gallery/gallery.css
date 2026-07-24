@@ -24,7 +24,8 @@ body{
 }
 .wall-nav a{color:#fff;text-decoration:none;font-weight:900}
 .wall-name{font-size:17px}
-.wall-nav nav{display:flex;gap:28px;font-size:13px}
+.wall-nav nav{display:flex;align-items:center;gap:7px;font-size:13px;white-space:nowrap}
+.wall-nav nav span{color:#777}
 .wall{
   width:min(calc(100% - 40px),1000px);
   margin:8px auto 0;
@@ -40,7 +41,40 @@ body{
 }
 #userPosts,#samplePosts{display:block}
 .empty{padding:24px;background:#eee;color:#222;text-align:center}
+.manage-bar{
+  position:fixed;
+  z-index:20;
+  left:50%;
+  bottom:max(14px,env(safe-area-inset-bottom));
+  width:min(calc(100% - 28px),520px);
+  padding:12px;
+  transform:translateX(-50%);
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  align-items:center;
+  gap:8px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:13px;
+  background:rgba(17,17,17,.94);
+  box-shadow:0 12px 40px rgba(0,0,0,.38);
+  backdrop-filter:blur(10px);
+}
+.manage-bar[hidden]{display:none}
+.manage-bar p{margin:0;font-size:11px;font-weight:700}
+.manage-bar button{
+  min-height:36px;
+  padding:7px 9px;
+  border:0;
+  border-radius:8px;
+  background:#eee;
+  color:#111;
+  font-size:11px;
+  font-weight:900;
+}
+.manage-bar .delete-button{background:#a82c24;color:#fff}
 @media(max-width:600px){
   .wall{width:calc(100% - 40px)}
-  .wall-nav nav{gap:26px}
+  .wall-nav nav{gap:3px;font-size:10px}
+  .manage-bar{grid-template-columns:1fr 1fr}
+  .manage-bar p{grid-column:1/-1;text-align:center}
 }

@@ -350,21 +350,40 @@ function openWallDatabase() {
 }
 
 $("#publishWall").addEventListener("click", async () => {
-  const blob = await exportBlob("image/jpeg", .9);
-  const db = await openWallDatabase();
-  const post = {
-    id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}`,
-    createdAt: Date.now(),
-    name: state.name,
-    message: state.message,
-    image: blob
-  };
-  await new Promise((resolve, reject) => {
-    const request = db.transaction("posts", "readwrite").objectStore("posts").put(post);
-    request.onsuccess = resolve;
-    request.onerror = () => reject(request.error);
-  });
-  location.href = "./gallery/?added=1";
+  const wallWindow = window.open("", "_blank");
+  if (wallWindow) {
+    wallWindow.document.write("<!doctype html><title>最果ての壁へ積んでいます</title><style>body{margin:0;display:grid;place-items:center;min-height:100vh;background:#111;color:#fff;font-family:sans-serif}</style><p>最果ての壁へ積んでいます…</p>");
+  }
+  try {
+    const blob = await exportBlob("image/jpeg", .9);
+    const db = await openWallDatabase();
+    const deleteToken = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+    const post = {
+      id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}`,
+      deleteToken,
+      createdAt: Date.now(),
+      name: state.name,
+      message: state.message,
+      image: blob
+    };
+    await new Promise((resolve, reject) => {
+      const request = db.transaction("posts", "readwrite").objectStore("posts").put(post);
+      request.onsuccess = resolve;
+      request.onerror = () => reject(request.error);
+    });
+    const wallUrl = new URL("./gallery/", location.href);
+    wallUrl.searchParams.set("added", "1");
+    wallUrl.searchParams.set("manage", deleteToken);
+    if (wallWindow) wallWindow.location.href = wallUrl.href;
+    else {
+      statusMessage.textContent = "新しいタブを開けなかったため、このタブで壁を表示します";
+      location.href = wallUrl.href;
+    }
+  } catch (error) {
+    if (wallWindow) wallWindow.close();
+    statusMessage.textContent = "壁へ積めませんでした。もう一度お試しください";
+    console.error(error);
+  }
 });
 
 Promise.all([

@@ -15,7 +15,10 @@
   <header class="wall-nav">
     <a class="wall-name" href="./">最果ての壁</a>
     <nav aria-label="ページ内ナビ">
-      <a href="../">作る</a>
+      <a href="../">布教ヘッダーを作る</a>
+      <span aria-hidden="true">｜</span>
+      <a href="./">最果ての壁を見る</a>
+      <span aria-hidden="true">｜</span>
       <a href="../../">TOP</a>
     </nav>
   </header>
@@ -37,6 +40,11 @@
       <img src="../assets/samples/sample-06.png" alt="">
     </div>
   </main>
+  <aside id="manageBar" class="manage-bar" hidden>
+    <p>この投稿の削除用ページです</p>
+    <button id="copyDeleteUrl" type="button">削除用URLをコピー</button>
+    <button id="deletePost" class="delete-button" type="button">この投稿を削除</button>
+  </aside>
   <script src="./gallery.js"></script>
 </body>
 </html>
