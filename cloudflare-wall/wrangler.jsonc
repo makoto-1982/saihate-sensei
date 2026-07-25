@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "saihate-wall-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-25",
+  "vars": {
+    "ALLOWED_ORIGINS": "https://saihate-sensei.com,https://www.saihate-sensei.com,https://makoto-1982.github.io",
+    "MAX_POSTS_PER_HOUR": "6"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "saihate-wall-db",
+      "database_id": "c86906c8-03ce-4ff4-8f82-a67b35709a69",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "IMAGES",
+      "bucket_name": "saihate-wall-images"
+    }
+  ]
+}
