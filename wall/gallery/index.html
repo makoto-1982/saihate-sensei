@@ -25,26 +25,15 @@
 
   <main id="wall" class="wall" aria-label="新しい順に積まれた布教ヘッダー">
     <div id="userPosts"></div>
-    <div id="samplePosts">
-      <img src="../assets/samples/sample-01.png" alt="マコトさんの布教ヘッダー">
-      <img src="../assets/samples/sample-02.png" alt="ナナミさんの布教ヘッダー">
-      <img src="../assets/samples/sample-03.png" alt="ケンタさんの布教ヘッダー">
-      <img src="../assets/samples/sample-04.png" alt="ミサキさんの布教ヘッダー">
-      <img src="../assets/samples/sample-05.png" alt="ユウさんの布教ヘッダー">
-      <img src="../assets/samples/sample-06.png" alt="アヤさんの布教ヘッダー">
-      <img src="../assets/samples/sample-02.png" alt="">
-      <img src="../assets/samples/sample-04.png" alt="">
-      <img src="../assets/samples/sample-01.png" alt="">
-      <img src="../assets/samples/sample-05.png" alt="">
-      <img src="../assets/samples/sample-03.png" alt="">
-      <img src="../assets/samples/sample-06.png" alt="">
-    </div>
+    <p id="wallStatus" class="wall-status" aria-live="polite"></p>
+    <div id="loadSentinel" aria-hidden="true"></div>
   </main>
   <aside id="manageBar" class="manage-bar" hidden>
     <p>この投稿の削除用ページです</p>
     <button id="copyDeleteUrl" type="button">削除用URLをコピー</button>
     <button id="deletePost" class="delete-button" type="button">この投稿を削除</button>
   </aside>
+  <script src="../config.js"></script>
   <script src="./gallery.js"></script>
 </body>
 </html>

@@ -337,43 +337,20 @@ $("#saveImage").addEventListener("click", async () => {
   statusMessage.textContent = "1500×500pxの軽量なJPEG画像を保存しました";
 });
 
-function openWallDatabase() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open("saihate-wall", 1);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains("posts")) db.createObjectStore("posts", { keyPath: "id" });
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
+const wallApi = String(window.SAIHATE_WALL_API || "").replace(/\/$/, "");
 
-function blobToDataUrl(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
-}
-
-async function savePostWithFallback(post, blob) {
-  try {
-    const imageDataUrl = await blobToDataUrl(blob);
-    const posts = JSON.parse(localStorage.getItem("saihate-wall-posts") || "[]");
-    posts.push({ ...post, imageDataUrl });
-    localStorage.setItem("saihate-wall-posts", JSON.stringify(posts.slice(-4)));
-    return "localStorage";
-  } catch (localStorageError) {
-    const db = await openWallDatabase();
-    await new Promise((resolve, reject) => {
-      const request = db.transaction("posts", "readwrite").objectStore("posts").put({ ...post, image: blob });
-      request.onsuccess = resolve;
-      request.onerror = () => reject(request.error);
-    });
-    return "indexedDB";
+async function publishToWall(blob) {
+  if (!wallApi || wallApi.includes("REPLACE-ME")) {
+    throw new Error("Cloudflareの接続設定が完了していません");
   }
+  const form = new FormData();
+  form.append("image", blob, "saihate-fukyo-header.jpg");
+  form.append("name", state.name);
+  form.append("message", state.message);
+  const response = await fetch(`${wallApi}/posts`, { method: "POST", body: form });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result.error || "壁へ積めませんでした");
+  return result;
 }
 
 $("#publishWall").addEventListener("click", async () => {
@@ -384,18 +361,11 @@ $("#publishWall").addEventListener("click", async () => {
   try {
     const blob = await exportBlob("image/jpeg", .9);
     if (!blob) throw new Error("画像を生成できませんでした");
-    const deleteToken = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
-    const post = {
-      id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}`,
-      deleteToken,
-      createdAt: Date.now(),
-      name: state.name,
-      message: state.message
-    };
-    await savePostWithFallback(post, blob);
+    const result = await publishToWall(blob);
     const wallUrl = new URL("./gallery/", location.href);
     wallUrl.searchParams.set("added", "1");
-    wallUrl.searchParams.set("manage", deleteToken);
+    wallUrl.searchParams.set("post", result.post.id);
+    wallUrl.searchParams.set("manage", result.deleteToken);
     if (wallWindow) wallWindow.location.href = wallUrl.href;
     else {
       statusMessage.textContent = "新しいタブを開けなかったため、このタブで壁を表示します";
@@ -403,7 +373,7 @@ $("#publishWall").addEventListener("click", async () => {
     }
   } catch (error) {
     if (wallWindow) wallWindow.close();
-    statusMessage.textContent = "壁へ積めませんでした。もう一度お試しください";
+    statusMessage.textContent = error.message || "壁へ積めませんでした。もう一度お試しください";
     console.error(error);
   }
 });

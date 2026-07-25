@@ -39,8 +39,17 @@ body{
   object-fit:cover;
   margin:0;
 }
-#userPosts,#samplePosts{display:block}
-.empty{padding:24px;background:#eee;color:#222;text-align:center}
+#userPosts{display:block}
+.wall-status{
+  min-height:0;
+  margin:0;
+  padding:0;
+  color:#fff;
+  text-align:center;
+  font-size:12px;
+}
+.wall-status:not(:empty){padding:16px;background:rgba(17,17,17,.88)}
+#loadSentinel{height:1px}
 .manage-bar{
   position:fixed;
   z-index:20;

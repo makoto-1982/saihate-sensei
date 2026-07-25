@@ -1,56 +1,50 @@
 const userPosts = document.querySelector("#userPosts");
-const objectUrls = [];
 const params = new URLSearchParams(location.search);
 const manageToken = params.get("manage");
+const managedPostId = params.get("post");
 const manageBar = document.querySelector("#manageBar");
-let managedPost = null;
+const wallStatus = document.querySelector("#wallStatus");
+const loadSentinel = document.querySelector("#loadSentinel");
+const wallApi = String(window.SAIHATE_WALL_API || "").replace(/\/$/, "");
+let offset = 0;
+let hasMore = true;
+let loading = false;
 
-function openWallDatabase() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open("saihate-wall", 1);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains("posts")) db.createObjectStore("posts", { keyPath: "id" });
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
+function apiReady() {
+  return wallApi && !wallApi.includes("REPLACE-ME");
 }
 
 async function loadPosts() {
-  const posts = [];
-  try {
-    const db = await openWallDatabase();
-    const databasePosts = await new Promise((resolve, reject) => {
-      const request = db.transaction("posts", "readonly").objectStore("posts").getAll();
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-    posts.push(...databasePosts.map((post) => ({ ...post, storage: "indexedDB" })));
-  } catch (error) {
-    console.warn("端末内データベースを読み込めませんでした", error);
+  if (loading || !hasMore) return;
+  if (!apiReady()) {
+    wallStatus.textContent = "Cloudflareの接続設定が完了していません";
+    return;
   }
+  loading = true;
+  wallStatus.textContent = offset ? "続きを読み込んでいます…" : "壁を読み込んでいます…";
   try {
-    const fallbackPosts = JSON.parse(localStorage.getItem("saihate-wall-posts") || "[]");
-    posts.push(...fallbackPosts.map((post) => ({ ...post, storage: "localStorage" })));
+    const response = await fetch(`${wallApi}/posts?offset=${offset}`);
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || "壁を読み込めませんでした");
+    result.posts.forEach(addPostImage);
+    offset = result.nextOffset;
+    hasMore = result.hasMore;
+    wallStatus.textContent = "";
+    loadSentinel.hidden = !hasMore;
   } catch (error) {
-    console.warn("予備の端末内保存を読み込めませんでした", error);
+    wallStatus.textContent = error.message;
+  } finally {
+    loading = false;
   }
-  posts.sort((a, b) => b.createdAt - a.createdAt);
-  posts.forEach((post) => {
-    const image = document.createElement("img");
-    if (post.image) {
-      const url = URL.createObjectURL(post.image);
-      objectUrls.push(url);
-      image.src = url;
-    } else {
-      image.src = post.imageDataUrl;
-    }
-    image.alt = `${post.name || "匿名"}さんの布教ヘッダー`;
-    userPosts.append(image);
-    if (manageToken && post.deleteToken === manageToken) managedPost = post;
-  });
-  if (managedPost) manageBar.hidden = false;
+}
+
+function addPostImage(post) {
+  const image = document.createElement("img");
+  image.src = post.imageUrl;
+  image.alt = `${post.name || "匿名"}さんの布教ヘッダー`;
+  image.loading = offset > 0 ? "lazy" : "eager";
+  image.dataset.postId = post.id;
+  userPosts.append(image);
 }
 
 document.querySelector("#copyDeleteUrl").addEventListener("click", async () => {
@@ -59,36 +53,30 @@ document.querySelector("#copyDeleteUrl").addEventListener("click", async () => {
     await navigator.clipboard.writeText(location.href);
     button.textContent = "コピーしました";
   } catch {
-    const textArea = document.createElement("textarea");
-    textArea.value = location.href;
-    textArea.setAttribute("readonly", "");
-    textArea.style.position = "fixed";
-    textArea.style.opacity = "0";
-    document.body.append(textArea);
-    textArea.select();
-    const copied = document.execCommand("copy");
-    textArea.remove();
-    if (copied) button.textContent = "コピーしました";
-    else prompt("このURLをコピーしてください", location.href);
+    prompt("このURLをコピーしてください", location.href);
   }
 });
 
 document.querySelector("#deletePost").addEventListener("click", async () => {
-  if (!managedPost) return;
+  if (!manageToken || !managedPostId || !apiReady()) return;
   if (!confirm("この布教ヘッダーを最果ての壁から削除しますか？")) return;
-  if (managedPost.storage === "localStorage") {
-    const posts = JSON.parse(localStorage.getItem("saihate-wall-posts") || "[]");
-    localStorage.setItem("saihate-wall-posts", JSON.stringify(posts.filter((post) => post.id !== managedPost.id)));
-  } else {
-    const db = await openWallDatabase();
-    await new Promise((resolve, reject) => {
-      const request = db.transaction("posts", "readwrite").objectStore("posts").delete(managedPost.id);
-      request.onsuccess = resolve;
-      request.onerror = () => reject(request.error);
-    });
+  const response = await fetch(`${wallApi}/posts/${encodeURIComponent(managedPostId)}`, {
+    method: "DELETE",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ deleteToken: manageToken })
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    alert(result.error || "削除できませんでした");
+    return;
   }
   location.href = "./";
 });
 
-addEventListener("beforeunload", () => objectUrls.forEach((url) => URL.revokeObjectURL(url)));
+if (manageToken && managedPostId) manageBar.hidden = false;
+
+const observer = new IntersectionObserver((entries) => {
+  if (entries.some((entry) => entry.isIntersecting)) loadPosts();
+}, { rootMargin: "800px" });
+observer.observe(loadSentinel);
 loadPosts();

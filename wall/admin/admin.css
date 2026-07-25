@@ -1,0 +1,42 @@
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:#eceae4;
+  color:#171616;
+  font-family:"Noto Sans JP",-apple-system,BlinkMacSystemFont,"Yu Gothic",sans-serif;
+}
+button,input{font:inherit}
+button{cursor:pointer}
+header{
+  min-height:56px;
+  padding:0 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:#111;
+  color:#fff;
+}
+header a{color:#fff;text-decoration:none;font-weight:700}
+main{width:min(calc(100% - 28px),900px);margin:28px auto 80px}
+.login-panel{
+  width:min(100%,440px);
+  margin:12vh auto 0;
+  padding:24px;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 12px 40px rgba(0,0,0,.12);
+}
+.login-panel label{display:grid;gap:8px;font-weight:900}
+.login-panel input{width:100%;min-height:48px;padding:8px 12px;border:1px solid #aaa;border-radius:8px}
+.login-panel button,#loadMore{width:100%;min-height:48px;margin-top:14px;border:0;border-radius:8px;background:#111;color:#fff;font-weight:900}
+.login-panel p{min-height:20px;margin:10px 0 0;color:#a3241d;font-size:12px}
+.admin-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.admin-heading button{padding:8px 14px;border:1px solid #777;border-radius:8px;background:#fff}
+.post-list{display:grid;gap:12px}
+.post-card{padding:10px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border-radius:10px;background:#fff}
+.post-card img{display:block;width:100%;aspect-ratio:3/1;object-fit:cover}
+.post-card button{align-self:stretch;padding:8px 14px;border:0;border-radius:8px;background:#a3241d;color:#fff;font-weight:900}
+@media(max-width:560px){
+  .post-card{grid-template-columns:1fr}
+  .post-card button{min-height:44px}
+}
