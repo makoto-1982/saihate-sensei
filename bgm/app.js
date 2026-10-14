@@ -3,7 +3,7 @@ const keys=['Q','W','E','A','S','D','Z','X','C'],hues=[155,180,210,105,48,28,180
 const $=id=>document.getElementById(id), pads=[];
 keys.forEach((key,i)=>{const b=document.createElement('button');b.className='pad';b.style.setProperty('--h',hues[i]);b.setAttribute('aria-label',`音声 ${i+1}、キー ${key}`);b.innerHTML=`<span class="orbit"></span><span class="key">${key}</span>`;b.addEventListener('click',()=>trigger(i));$('pads').append(b);pads.push(b)});
 let ctx,master,musicBus,voiceBus,send,delay,feedback,wet,reverb,reverbGain,buffers=[],playing=false,loading=false,timer,next=0,step=0,origin=0,nextWander=Infinity,lastTap=-Infinity,lastWander=-1;
-let beat=60/69.75,tick=beat/4,analysis=null,bgm=null;
+let beat=60/89.1,tick=beat/4,analysis=null,bgm=null;
 const loops=new Map(),sources=new Set(),visuals=[];
 const slots=[0,1,2,3,4,5,6,7,8],poolSize=17;
 function shuffleSlots(){const pool=Array.from({length:poolSize},(_,i)=>i);for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}slots.splice(0,9,...pool.slice(0,9))}
@@ -24,7 +24,7 @@ async function loadAssets(){
 }
 function initMusic(){bgm=new Audio('music/autumn-original.mp3');bgm.loop=true;bgm.preload='auto';bgm.setAttribute('playsinline','');ctx.createMediaElementSource(bgm).connect(musicBus);
  bgm.addEventListener('error',()=>{playing=false;clearInterval(timer);ctx.suspend();renderTransport();$('status').textContent='BGMを読み込めませんでした。通信を確認して再度お試しください。'});
- if('mediaSession' in navigator){try{navigator.mediaSession.metadata=new MediaMetadata({title:'静かな秋の午後',artist:'最果てのBGM'});navigator.mediaSession.setActionHandler('play',()=>{if(!playing)toggle()});navigator.mediaSession.setActionHandler('pause',()=>{if(playing)toggle()})}catch{}}
+ if('mediaSession' in navigator){try{navigator.mediaSession.metadata=new MediaMetadata({title:'Smoky Club Ambience',artist:'最果てのBGM'});navigator.mediaSession.setActionHandler('play',()=>{if(!playing)toggle()});navigator.mediaSession.setActionHandler('pause',()=>{if(playing)toggle()})}catch{}}
 }
 async function toggle(){
  if(loading)return;$('status').classList.remove('error');loading=true;$('transport').disabled=true;$('transport').setAttribute('aria-busy','true');
@@ -34,7 +34,7 @@ async function toggle(){
   await ctx.resume();
   if(!analysis||buffers.length!==poolSize){$('status').textContent='音庭を準備しています…';await loadAssets();shuffleSlots();origin=ctx.currentTime;nextWander=origin+3+Math.random()*3}
   await bgm.play();playing=true;next=ctx.currentTime+.06;step=0;
-  renderTransport();$('status').textContent='静かな秋の午後。触れても、聴いているだけでも。';
+  renderTransport();$('status').textContent='Smoky Club Ambience。触れても、聴いているだけでも。';
   if(navigator.mediaSession)navigator.mediaSession.playbackState='playing';
   timer=setInterval(schedule,50);schedule();
  }catch(e){playing=false;clearInterval(timer);if(bgm)bgm.pause();if(ctx)await ctx.suspend();$('status').classList.add('error');$('status').textContent='再生できませんでした。もう一度お試しください。';renderTransport()}
